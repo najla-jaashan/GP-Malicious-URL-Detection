@@ -1,6 +1,8 @@
 # Technical Report: Malicious URL Detection with DistilBERT
 
-**Prepared as part of a code review, restructuring, and repository reorganization of the original project by Alhamli, Aljomuh & Alkhalis (Imam Abdulrahman Bin Faisal University).**
+**Author (engineering, code review, restructuring, and documentation): Najla Jaashan.**
+
+*This report documents the re-engineering of an existing DistilBERT URL-classification research prototype into a modular, reproducible software package. The underlying model research (dataset, fine-tuning approach, reported metrics) originates with the research team at the Dept. of Computer Engineering, Imam Abdulrahman Bin Faisal University; see `docs/paper.pdf`. All software architecture, the code-review findings, the label-mapping fix, and the analysis and recommendations below are the author's own engineering contribution.*
 
 ---
 
