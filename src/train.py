@@ -72,9 +72,9 @@ def main():
         num_train_epochs=config.NUM_EPOCHS,
         learning_rate=config.LEARNING_RATE,
         weight_decay=config.WEIGHT_DECAY,
-        load_best_model_at_end=True,          # keep the best epoch, not the last
+        load_best_model_at_end=True,  # keep the best epoch, not the last
         metric_for_best_model="macro_f1",
-        report_to=[],                         # disable wandb/tensorboard logging
+        report_to=[],  # disable wandb/tensorboard logging
     )
 
     trainer = Trainer(

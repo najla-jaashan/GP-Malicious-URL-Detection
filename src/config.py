@@ -33,8 +33,8 @@ MAX_SEQ_LENGTH = 64
 # ---------------------------------------------------------------------------
 # Data split (stratified by class)
 # ---------------------------------------------------------------------------
-TEST_VAL_FRACTION = 0.30   # 70% train, then the remaining 30% is split...
-TEST_FRACTION = 0.50       # ...50/50 into validation (15%) and test (15%)
+TEST_VAL_FRACTION = 0.30  # 70% train, then the remaining 30% is split...
+TEST_FRACTION = 0.50  # ...50/50 into validation (15%) and test (15%)
 RANDOM_SEED = 42
 
 # ---------------------------------------------------------------------------
