@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Data & model artifacts (too large for git)
+data/*.csv
+models/distilbert-url-classifier/
+results/
+checkpoints/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
