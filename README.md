@@ -152,6 +152,12 @@ committed by default because it depends on your local trained model.
 
 See `docs/TECHNICAL_REPORT.md` for the full analysis, identified challenges, and future-work recommendations.
 
+## Authorship & Credit
+
+**Najla Jaashan** — software engineering and productionization: the modular `src/` package, the deterministic label-map fix, model persistence, confidence calibration and the "uncertain" band, out-of-distribution and adversarial evaluation, the latency benchmark, the Gradio web UI, the unit-test suite and CI, and all documentation.
+
+The underlying model research — the DistilBERT fine-tuning approach, the dataset, and the reported baseline results — originates with the research team at the Department of Computer Engineering, Imam Abdulrahman Bin Faisal University, Dammam. The original paper is preserved in `docs/paper.pdf`.
+
 ## Disclaimer
 
 This model is a research prototype. Predictions should not be treated as a guarantee that a URL is safe; use it as one signal within a layered security workflow.
