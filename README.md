@@ -104,12 +104,6 @@ python -m src.predict "http://secure-login.paypa1-account.example/verify"
 
 See `docs/TECHNICAL_REPORT.md` for the full analysis, identified challenges, and future-work recommendations.
 
-## Authorship & Attribution
-
-**Software engineering, restructuring, code review, and documentation:** Najla Jaashan — modular package design (`src/`), the deterministic label-map fix, model persistence and evaluation tooling, confidence-scored inference, the README, and the technical report.
-
-**Underlying model research** (dataset choice, DistilBERT fine-tuning approach, and reported results): the original research team at the Dept. of Computer Engineering, Imam Abdulrahman Bin Faisal University, Dammam. See `docs/paper.pdf` for the original paper.
-
 ## Disclaimer
 
 This model is a research prototype. Predictions should not be treated as a guarantee that a URL is safe; use it as one signal within a layered security workflow.
