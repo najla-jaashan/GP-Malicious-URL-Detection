@@ -8,13 +8,19 @@ This repository is the **engineering and productionization work of Najla Jaashan
 
 ```
 malicious-url-detection-distilbert/
+├── app.py               # Gradio web UI (python app.py)
 ├── src/
 │   ├── config.py        # All hyperparameters, paths, and constants
 │   ├── data.py          # Loading, stratified splitting, labels, tokenization
 │   ├── train.py         # Fine-tuning pipeline (python -m src.train)
 │   ├── evaluate.py      # Test-set metrics + confusion matrix
-│   ├── predict.py       # Interactive / CLI URL classifier
-│   └── visualize.py     # Class-distribution plot across splits
+│   ├── calibrate.py     # Temperature scaling for confidence calibration
+│   ├── predict.py       # Calibrated inference + "uncertain" band (CLI)
+│   ├── cross_eval.py    # Out-of-distribution evaluation on external data
+│   ├── benchmark.py     # Latency benchmark (ms/URL, CPU vs GPU)
+│   ├── adversarial.py   # Robustness spot-check (homoglyph/typosquat/padding)
+│   └── visualize.py     # Class-distribution & confusion-matrix figures
+├── tests/               # Unit tests (run in CI, no model/dataset needed)
 ├── notebooks/
 │   └── NLP_Project.ipynb    # Original research notebook
 ├── docs/
@@ -93,6 +99,43 @@ python -m src.predict
 python -m src.predict "http://secure-login.paypa1-account.example/verify"
 ```
 
+Predictions below the confidence threshold (`config.UNCERTAIN_THRESHOLD`,
+default 0.60) are reported as **uncertain** rather than force-classified.
+
+### 6. Web UI
+
+```bash
+python app.py
+```
+
+Launches a Gradio interface (with a temporary public share link) where you
+enter a URL and see the verdict, confidence, and full class-probability bars.
+The app reuses `src/predict.py`, so labels and behavior stay in sync with the
+trained model automatically.
+
+## Additional Tooling
+
+| Command | Purpose |
+|---|---|
+| `python -m src.calibrate` | Fit temperature scaling on the validation set; writes `temperature.json` and reports Expected Calibration Error before/after. |
+| `python -m src.cross_eval external.csv` | Evaluate on an **independent** labelled URL CSV to measure the generalization gap. |
+| `python -m src.benchmark` | Report inference latency (mean/p50/p95 ms per URL) on CPU and GPU. |
+| `python -m src.adversarial` | Spot-check robustness to homoglyph, typosquat, and subdomain-padding evasions of benign URLs. |
+| `python -m src.visualize --confusion` | Save the test-set confusion matrix to `docs/confusion_matrix.png`. |
+
+## Confusion Matrix
+
+Generate it after training with:
+
+```bash
+python -m src.visualize --confusion
+```
+
+This writes `docs/confusion_matrix.png` (rows = true classes, columns =
+predicted; cells show raw counts over row-normalized shading). Once generated,
+embed it here with `![Confusion matrix](docs/confusion_matrix.png)`. It is not
+committed by default because it depends on your local trained model.
+
 ## Improvements Over the Original Notebook
 
 - **Deterministic, persisted label map** — the notebook derived labels from `df['type'].unique()` (row-order dependent) and hardcoded a separate `id2label` dictionary in the prediction cell, a mismatch risk. Here the mapping is sorted, saved to `label_map.json`, and embedded in the model config.
@@ -100,6 +143,11 @@ python -m src.predict "http://secure-login.paypa1-account.example/verify"
 - **Best-epoch selection** — `load_best_model_at_end` with macro-F1 replaces "keep whatever the last epoch produced".
 - **Metrics during training** — a `compute_metrics` callback reports accuracy/macro-F1 each epoch instead of loss only.
 - **Confidence scores and confusion matrix** added at inference/evaluation time.
+- **Temperature-scaling calibration** (`calibrate.py`) with an Expected Calibration Error report, plus an **"uncertain" band** so borderline URLs are flagged rather than force-classified.
+- **Out-of-distribution evaluation** (`cross_eval.py`) to measure the honest generalization gap on independent data.
+- **Latency benchmark** (`benchmark.py`) and an **adversarial robustness spot-check** (`adversarial.py`).
+- **Gradio web UI** (`app.py`) reusing the inference module.
+- **Unit tests** (`tests/`) wired into CI, with heavy ML imports made lazy so tests and the linter run without a GPU or the dataset.
 - **Modular, documented code** with centralized configuration.
 
 See `docs/TECHNICAL_REPORT.md` for the full analysis, identified challenges, and future-work recommendations.

@@ -12,9 +12,7 @@ import json
 from pathlib import Path
 
 import pandas as pd
-from datasets import Dataset
 from sklearn.model_selection import train_test_split
-from transformers import DistilBertTokenizerFast
 
 from . import config
 
@@ -81,8 +79,15 @@ def encode_labels(dfs, label_map: dict):
     return encoded
 
 
-def get_tokenizer() -> DistilBertTokenizerFast:
-    """Load the DistilBERT sub-word tokenizer."""
+def get_tokenizer():
+    """Load the DistilBERT sub-word tokenizer.
+
+    ``transformers`` is imported lazily so that importing this module (e.g. in
+    unit tests or the fast class-distribution plot) does not require the heavy
+    ML stack.
+    """
+    from transformers import DistilBertTokenizerFast
+
     return DistilBertTokenizerFast.from_pretrained(config.BASE_MODEL)
 
 
@@ -92,6 +97,8 @@ def tokenize_splits(tokenizer, train_df, val_df, test_df):
     Every URL is padded/truncated to ``MAX_SEQ_LENGTH`` sub-word tokens and
     formatted as PyTorch tensors ready for the Trainer API.
     """
+
+    from datasets import Dataset
 
     def tokenize(batch):
         return tokenizer(

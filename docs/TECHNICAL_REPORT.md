@@ -78,8 +78,14 @@ src/
 ├── data.py       # loading, deterministic label map, stratified split, tokenization
 ├── train.py      # fine-tuning + artifact persistence (model, tokenizer, label_map.json)
 ├── evaluate.py   # test metrics table + confusion matrix
-├── predict.py    # interactive & CLI inference with confidence scores
-└── visualize.py  # class-distribution figure
+├── calibrate.py  # temperature scaling + Expected Calibration Error
+├── predict.py    # calibrated inference, "uncertain" band, CLI
+├── cross_eval.py # out-of-distribution evaluation on external data
+├── benchmark.py  # latency benchmark (ms/URL, CPU vs GPU)
+├── adversarial.py# robustness spot-check (homoglyph / typosquat / padding)
+└── visualize.py  # class-distribution & confusion-matrix figures
+app.py            # Gradio web UI (reuses src/predict.py)
+tests/            # unit tests wired into CI (no model/dataset required)
 ```
 
 Key corrections applied during restructuring:
@@ -91,6 +97,14 @@ Key corrections applied during restructuring:
 - `predict.py` reports a softmax **confidence score** and supports both interactive and batch CLI modes.
 - `evaluate.py` adds a **confusion matrix**, which the original evaluation lacked.
 - `requirements.txt` and `.gitignore` added; large artifacts (CSV, model weights) excluded from version control.
+
+**Feature additions beyond restructuring:**
+
+- **Confidence calibration** (`calibrate.py`): temperature scaling (Guo et al., 2017) fits a single scalar on the validation set to correct the network's over-confidence, leaving the predicted class (and thus accuracy) unchanged. An Expected Calibration Error is reported before and after. `predict.py` applies the learned temperature automatically and returns an **"uncertain"** verdict below a configurable threshold.
+- **Out-of-distribution evaluation** (`cross_eval.py`): scores the model on an independent labelled CSV, exposing the generalization gap that within-dataset accuracy hides.
+- **Latency benchmark** (`benchmark.py`): mean/p50/p95 ms per URL on CPU and GPU, substantiating the real-time-deployment rationale for choosing DistilBERT.
+- **Adversarial spot-check** (`adversarial.py`): measures how often simple homoglyph, typosquat, and subdomain-padding perturbations of benign URLs flip the prediction — an evidence-backed limitations result.
+- **Gradio web UI** (`app.py`) and a **unit-test suite** (`tests/`) wired into CI. Heavy ML imports (`transformers`, `datasets`) were made lazy so tests and linting run without a GPU or the dataset.
 
 **Note on reproducibility:** because the label mapping was changed from row-order-dependent to alphabetical, integer label IDs differ from the original notebook run. This does not affect metrics or behavior — only the internal ID assignment — and the persisted mapping guarantees internal consistency.
 

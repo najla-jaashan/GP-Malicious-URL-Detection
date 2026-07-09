@@ -29,17 +29,22 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Install tooling
+      - name: Install tooling and lightweight test deps
+        # Deliberately does NOT install transformers/datasets/gradio: the unit
+        # tests import only the light stack (heavy imports are lazy), so CI
+        # stays fast and does not need a GPU or the dataset.
         run: |
           python -m pip install --upgrade pip
-          pip install ruff
+          pip install ruff pytest pandas scikit-learn "torch>=2.0" --index-url https://download.pytorch.org/whl/cpu || pip install ruff pytest pandas scikit-learn torch
 
       - name: Lint with ruff
-        run: ruff check src/
+        run: ruff check src/ tests/ app.py
 
       - name: Check formatting with ruff
-        run: ruff format --check src/
+        run: ruff format --check src/ tests/ app.py
 
       - name: Byte-compile all modules
-        # Catches syntax errors without needing the heavy ML dependencies.
-        run: python -m compileall -q src/
+        run: python -m compileall -q src/ tests/ app.py
+
+      - name: Run unit tests
+        run: pytest tests/ -q

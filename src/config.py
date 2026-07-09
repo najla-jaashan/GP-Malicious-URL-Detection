@@ -45,3 +45,15 @@ BATCH_SIZE = 16
 LEARNING_RATE = 2e-5
 WEIGHT_DECAY = 0.01
 LOGGING_STEPS = 100
+
+# ---------------------------------------------------------------------------
+# Inference / calibration
+# ---------------------------------------------------------------------------
+# A calibrated temperature (>1 softens over-confident logits) is learned on the
+# validation set by src/calibrate.py and written here. Default 1.0 = no change.
+TEMPERATURE_FILE = OUTPUT_DIR / "temperature.json"
+
+# If the top calibrated probability is below this threshold, inference returns
+# an "uncertain" verdict instead of a hard class. A security tool should not
+# pretend certainty on borderline inputs.
+UNCERTAIN_THRESHOLD = 0.60
