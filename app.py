@@ -12,8 +12,8 @@ Run from the repository root (requires a trained model in ``models/``):
 
 import gradio as gr
 
-from src.predict import load_model, predict_proba, predict_url
 from src import config
+from src.predict import load_model, predict_proba, predict_url
 
 # Load the fine-tuned model ONCE at startup, not per request.
 tokenizer, model = load_model()

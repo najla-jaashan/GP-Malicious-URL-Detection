@@ -70,3 +70,35 @@ def test_config_constants_are_consistent():
     assert config.NUM_LABELS == 4
     assert 0.0 < config.UNCERTAIN_THRESHOLD < 1.0
     assert config.MAX_SEQ_LENGTH > 0
+
+
+def test_load_and_encode_splits_labels_every_split(tmp_path):
+    """Regression test: every split must carry a 'label' column.
+
+    This guards against a real bug where a caller unpacked
+    ``encode_labels``'s three return values as e.g. ``_, _, test_df = ...``,
+    silently leaving the discarded splits unlabeled. That crashes with
+    ``KeyError: 'label'`` only once those splits reach tokenization --
+    exactly the kind of mistake ``load_and_encode_splits`` exists to make
+    structurally impossible, so we test it directly here.
+    """
+    df = _toy_df()
+    csv_path = tmp_path / "toy.csv"
+    df.to_csv(csv_path, index=False)
+
+    # Case 1: no label_map given (as in training) -- one is built fresh.
+    train_df, val_df, test_df, label_map = data.load_and_encode_splits(
+        csv_path=csv_path
+    )
+    for split in (train_df, val_df, test_df):
+        assert "label" in split.columns
+        assert split["label"].notna().all()
+    assert label_map == data.build_label_map(df)
+
+    # Case 2: an existing label_map is passed in (as in evaluate/calibrate).
+    train_df2, val_df2, test_df2, label_map2 = data.load_and_encode_splits(
+        label_map, csv_path=csv_path
+    )
+    for split in (train_df2, val_df2, test_df2):
+        assert "label" in split.columns
+    assert label_map2 == label_map

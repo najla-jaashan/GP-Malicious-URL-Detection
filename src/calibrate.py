@@ -15,6 +15,7 @@ Writes the learned temperature to ``models/.../temperature.json``, which
 """
 
 import json
+from itertools import pairwise
 
 import numpy as np
 import torch
@@ -63,7 +64,7 @@ def expected_calibration_error(probs: np.ndarray, labels: np.ndarray, n_bins=10)
 
     bins = np.linspace(0.0, 1.0, n_bins + 1)
     ece = 0.0
-    for lo, hi in zip(bins[:-1], bins[1:]):
+    for lo, hi in pairwise(bins):
         mask = (confidences > lo) & (confidences <= hi)
         if mask.any():
             bin_conf = confidences[mask].mean()
@@ -74,10 +75,8 @@ def expected_calibration_error(probs: np.ndarray, labels: np.ndarray, n_bins=10)
 
 def main():
     # Rebuild the same validation split used during training.
-    df = data.load_dataframe()
     label_map = data.load_label_map(config.OUTPUT_DIR)
-    train_df, val_df, test_df = data.stratified_split(df)
-    _, val_df, _ = data.encode_labels((train_df, val_df, test_df), label_map)
+    train_df, val_df, test_df, label_map = data.load_and_encode_splits(label_map)
 
     tokenizer = DistilBertTokenizerFast.from_pretrained(str(config.OUTPUT_DIR))
     model = DistilBertForSequenceClassification.from_pretrained(str(config.OUTPUT_DIR))

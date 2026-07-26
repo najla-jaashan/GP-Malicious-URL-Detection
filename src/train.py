@@ -39,14 +39,8 @@ def compute_metrics(eval_pred):
 def main():
     # ------------------------------------------------------------------ data
     print("Loading dataset...")
-    df = data.load_dataframe()
-    label_map = data.build_label_map(df)
+    train_df, val_df, test_df, label_map = data.load_and_encode_splits()
     print(f"Label map: {label_map}")
-
-    train_df, val_df, test_df = data.stratified_split(df)
-    train_df, val_df, test_df = data.encode_labels(
-        (train_df, val_df, test_df), label_map
-    )
     print(f"Train: {len(train_df)} | Val: {len(val_df)} | Test: {len(test_df)}")
 
     tokenizer = data.get_tokenizer()

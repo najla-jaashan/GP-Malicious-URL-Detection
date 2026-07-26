@@ -62,10 +62,8 @@ def plot_confusion_matrix():
         Trainer,
     )
 
-    df = data.load_dataframe()
     label_map = data.load_label_map(config.OUTPUT_DIR)
-    train_df, val_df, test_df = data.stratified_split(df)
-    _, _, test_df = data.encode_labels((train_df, val_df, test_df), label_map)
+    train_df, val_df, test_df, label_map = data.load_and_encode_splits(label_map)
 
     tokenizer = DistilBertTokenizerFast.from_pretrained(str(config.OUTPUT_DIR))
     model = DistilBertForSequenceClassification.from_pretrained(str(config.OUTPUT_DIR))

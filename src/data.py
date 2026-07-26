@@ -79,6 +79,33 @@ def encode_labels(dfs, label_map: dict):
     return encoded
 
 
+def load_and_encode_splits(label_map: dict | None = None, csv_path: Path | None = None):
+    """Load the dataset, split it, and encode labels in every split, in one call.
+
+    Returns ``(train_df, val_df, test_df, label_map)`` where every split
+    already has a ``label`` column.
+
+    Pass ``label_map=None`` (training) to build a fresh sorted map from the
+    data. Pass the persisted map (``load_label_map(config.OUTPUT_DIR)``)
+    everywhere else, so evaluation/calibration/inference always encode
+    labels exactly the way the trained model expects. Pass ``csv_path`` to
+    load a different CSV than ``config.DATASET_CSV`` (e.g. in tests).
+
+    This exists so scripts never hand-unpack ``encode_labels``' three
+    return values themselves: doing that with e.g. ``_, _, test_df = ...``
+    silently keeps the *original, unencoded* train/val frames in scope,
+    which crashes downstream with ``KeyError: 'label'`` the moment they're
+    tokenized. Routing every caller through this one tested function
+    removes that failure mode entirely.
+    """
+    df = load_dataframe(csv_path) if csv_path is not None else load_dataframe()
+    if label_map is None:
+        label_map = build_label_map(df)
+    train_df, val_df, test_df = stratified_split(df)
+    train_df, val_df, test_df = encode_labels((train_df, val_df, test_df), label_map)
+    return train_df, val_df, test_df, label_map
+
+
 def get_tokenizer():
     """Load the DistilBERT sub-word tokenizer.
 
