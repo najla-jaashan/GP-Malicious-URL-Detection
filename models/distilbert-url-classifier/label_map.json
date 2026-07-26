@@ -1,0 +1,6 @@
+{
+  "benign": 0,
+  "defacement": 1,
+  "malware": 2,
+  "phishing": 3
+}

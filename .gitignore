@@ -7,7 +7,7 @@ venv/
 
 # Data & model artifacts (too large for git)
 data/*.csv
-models/distilbert-url-classifier/
+*.safetensors
 results/
 checkpoints/
 
@@ -18,3 +18,4 @@ checkpoints/
 .DS_Store
 .vscode/
 .idea/
+*.safetensors
