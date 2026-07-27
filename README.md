@@ -173,23 +173,6 @@ To regenerate after retraining:
 python -m src.visualize --confusion
 ```
 
-## Improvements Over the Original Notebook
-
-- **Deterministic, persisted label map** — the notebook derived labels from `df['type'].unique()` (row-order dependent) and hardcoded a separate `id2label` dictionary in the prediction cell, a mismatch risk. Here the mapping is sorted, saved to `label_map.json`, and embedded in the model config.
-- **Model persistence** — the notebook never saved the fine-tuned model; retraining was required for every session. `train.py` saves all artifacts for reuse.
-- **Best-epoch selection** — `load_best_model_at_end` with macro-F1 replaces "keep whatever the last epoch produced".
-- **Metrics during training** — a `compute_metrics` callback reports accuracy/macro-F1 each epoch instead of loss only.
-- **Confidence scores and confusion matrix** added at inference/evaluation time.
-- **Temperature-scaling calibration** (`calibrate.py`) with an Expected Calibration Error report, plus an **"uncertain" band** so borderline URLs are flagged rather than force-classified.
-- **Out-of-distribution evaluation** (`cross_eval.py`) to measure the honest generalization gap on independent data.
-- **Latency benchmark** (`benchmark.py`) and an **adversarial robustness spot-check** (`adversarial.py`).
-- **Gradio web UI** (`app.py`) reusing the inference module.
-- **Unit tests** (`tests/`) wired into CI, with heavy ML imports made lazy so tests and the linter run without a GPU or the dataset.
-- **Modular, documented code** with centralized configuration.
-
-See `docs/TECHNICAL_REPORT.md` for the full analysis, identified challenges, and future-work recommendations.
-
-
 ## Disclaimer
 
 This model is a research prototype. Predictions should not be treated as a guarantee that a URL is safe; use it as one signal within a layered security workflow.
