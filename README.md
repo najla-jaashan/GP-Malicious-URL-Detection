@@ -1,6 +1,6 @@
 # Malicious URL Detection with DistilBERT
 
-A transformer-based NLP system that classifies URLs into four categories — **benign**, **phishing**, **malware**, and **defacement** — by fine-tuning **DistilBERT** directly on raw URL strings, with no handcrafted feature engineering. The model achieves **98.89% accuracy** on a held-out test set of ~97K URLs.
+A transformer-based NLP system that classifies URLs into four categories — **benign**, **phishing**, **malware**, and **defacement** — by fine-tuning **DistilBERT** directly on raw URL strings, with no handcrafted feature engineering. The model achieves **98.85% accuracy** on a held-out test set of ~97K URLs.
 
 This repository is the **engineering and productionization work of Najla Jaashan**: a research prototype was re-architected into a clean, modular, reproducible Python package, with a latent label-mapping bug identified and fixed, model persistence and evaluation tooling added, and full documentation authored. The underlying model research is credited below. The original research notebook, paper, and presentation are preserved under `notebooks/` and `docs/`.
 
@@ -44,15 +44,17 @@ malicious-url-detection-distilbert/
 
 ## Results
 
-| Class      | Precision | Recall | F1-Score |
-|------------|-----------|--------|----------|
-| Benign     | 0.9922    | 0.9944 | 0.9933   |
-| Phishing   | 0.9641    | 0.9596 | 0.9619   |
-| Malware    | 0.9908    | 0.9705 | 0.9805   |
-| Defacement | 0.9974    | 0.9991 | 0.9982   |
-| **Macro Avg** | **0.9861** | **0.9809** | **0.9835** |
+Confirmed on this exact checkpoint via `python -m src.evaluate` (held-out 15% test split, 97,679 URLs):
 
-**Overall test accuracy: 98.89%**
+| Class      | Precision | Recall | F1-Score | Support |
+|------------|-----------|--------|----------|---------|
+| Benign     | 0.9915    | 0.9948 | 0.9931   | 64,216  |
+| Defacement | 0.9960    | 0.9991 | 0.9976   | 14,468  |
+| Malware    | 0.9954    | 0.9680 | 0.9815   | 4,878   |
+| Phishing   | 0.9648    | 0.9564 | 0.9606   | 14,117  |
+| **Macro Avg** | **0.9869** | **0.9796** | **0.9832** | 97,679 |
+
+**Overall test accuracy: 98.85%**
 
 ## Setup
 
@@ -125,16 +127,18 @@ trained model automatically.
 
 ## Confusion Matrix
 
-Generate it after training with:
+![Confusion matrix](docs/confusion_matrix.png)
 
+Rows are true classes, columns are predicted. The largest error is
+phishing→benign (539 cases) — the highest-stakes mistake type, since it
+represents an actual phishing URL being waved through as safe. Malware's
+errors skew toward phishing (146 of 156 total) rather than benign, suggesting
+the two share obfuscation patterns the model sometimes conflates.
+
+To regenerate after retraining:
 ```bash
 python -m src.visualize --confusion
 ```
-
-This writes `docs/confusion_matrix.png` (rows = true classes, columns =
-predicted; cells show raw counts over row-normalized shading). Once generated,
-embed it here with `![Confusion matrix](docs/confusion_matrix.png)`. It is not
-committed by default because it depends on your local trained model.
 
 ## Improvements Over the Original Notebook
 

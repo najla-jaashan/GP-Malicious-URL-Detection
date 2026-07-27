@@ -53,9 +53,13 @@ URLs are encoded with the standard `distilbert-base-uncased` WordPiece tokenizer
 | Loss | Cross-entropy |
 | Frameworks | PyTorch + HuggingFace Transformers/Datasets |
 
-### 3.5 Reported Results
+### 3.5 Confirmed Results (this checkpoint)
 
-Test accuracy **98.89%**, macro-F1 **0.9835**. Phishing is the weakest class (F1 0.9619) — expected, since phishing URLs deliberately mimic benign structure. Defacement is nearly perfectly separable (F1 0.9982), likely because those URLs share strong surface signatures (e.g., characteristic CMS paths).
+Confirmed via `python -m src.evaluate` on the held-out 15% test split (97,679 URLs): **test accuracy 98.85%, macro-F1 0.9832** — closely matching the reference configuration's reported figures (98.89%, macro-F1 0.9835), with the small difference attributable to this run's larger batch size (64) and fp16 training on GPU versus the reference configuration's batch size 16 in fp32.
+
+Phishing remains the weakest class (F1 0.9606), consistent with the reference results — expected, since phishing URLs deliberately mimic benign structure. Defacement is again nearly perfectly separable (F1 0.9976).
+
+**Confusion matrix analysis** (see `docs/confusion_matrix.png`): the single largest error type is **phishing misclassified as benign (539 cases)** — the highest-stakes mistake for a security tool, since it represents an actual attack being waved through. By contrast, benign misclassified as phishing (335 cases) is a false-positive nuisance cost, less dangerous but still worth tracking. Malware's errors skew heavily toward phishing (146 of 156 total malware misclassifications) rather than benign, suggesting the model sometimes conflates the two attack classes' obfuscation patterns rather than confusing either with legitimate traffic — arguably a safer failure mode than malware leaking into "benign."
 
 ## 4. Code Review: Issues Identified in the Original Notebook
 
@@ -127,7 +131,7 @@ Key corrections applied during restructuring:
 - **Cased or character-aware tokenization.** Compare `distilbert-base-cased`, CharBERT-style character models, or URL-aware tokenizers with structural markers (`[DOMAIN]`, `[PATH]`) as in DomURLs-BERT — case and character-level signals matter for obfuscated URLs.
 - **Class imbalance handling.** Malware is ~5% of the data; weighted cross-entropy or focal loss could lift its recall (currently the lowest at 0.9705).
 - **Adversarial robustness testing.** Evaluate against homoglyph substitution, URL shorteners, and typosquatting perturbations before claiming deployment readiness.
-- **Cross-dataset generalization.** The 98.89% figure is within-dataset. Testing on an independent corpus (e.g., PhishTank feeds, newer URL dumps) would reveal how much of the performance reflects dataset-specific artifacts — a known pitfall in this literature.
+- **Cross-dataset generalization.** The 98.85% figure is within-dataset. Testing on an independent corpus (e.g., PhishTank feeds, newer URL dumps) would reveal how much of the performance reflects dataset-specific artifacts — a known pitfall in this literature.
 
 **Engineering**
 - **Serve the model** behind a lightweight API (FastAPI) with batching, and consider ONNX/quantization export — DistilBERT quantizes well and would enable low-latency CPU inference.
