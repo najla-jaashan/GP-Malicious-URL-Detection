@@ -2,6 +2,8 @@
 
 A transformer-based NLP system that classifies URLs into four categories — **benign**, **phishing**, **malware**, and **defacement** — by fine-tuning **DistilBERT** directly on raw URL strings, with no handcrafted feature engineering. The model achieves **98.85% accuracy** on a held-out test set of ~97K URLs.
 
+🤗 **Pretrained weights:** [najlajj453/malicious-url-distilbert](https://huggingface.co/najlajj453/malicious-url-distilbert) on Hugging Face — use the model directly without training it yourself.
+
 ## Project Structure
 
 ```
@@ -85,11 +87,25 @@ CPU (order of days, not hours). Train on Colab, then copy the resulting
 `models/distilbert-url-classifier/` folder here — CPU is fine for inference,
 evaluation, and the web UI.
 
-### 2. Dataset
+### 2. Get the model — download pretrained (fast) or train it yourself
+
+**Option A — download the pretrained weights (recommended, no GPU needed):**
+
+```bash
+py -m pip install huggingface_hub   # if not already installed
+hf download najlajj453/malicious-url-distilbert --local-dir models/distilbert-url-classifier
+```
+
+This gets you straight to Step 5 (Evaluate) or Step 6 (Predict) — no dataset
+download or training required.
+
+**Option B — train it yourself:** continue with the Dataset and Train steps below.
+
+### 3. Dataset (only needed if training)
 
 Download `malicious_phish.csv` from the [Kaggle dataset page](https://www.kaggle.com/datasets/sid321axn/malicious-urls-dataset) and place it in `data/`.
 
-### 3. Train
+### 4. Train
 
 ```bash
 py -m src.train          # Windows
@@ -98,7 +114,7 @@ python -m src.train      # macOS / Linux
 
 Saves the fine-tuned model, tokenizer, and label map to `models/distilbert-url-classifier/`.
 
-### 4. Evaluate
+### 5. Evaluate
 
 ```bash
 py -m src.evaluate          # Windows
@@ -107,7 +123,7 @@ python -m src.evaluate      # macOS / Linux
 
 Prints the per-class metrics table and a confusion matrix on the held-out test split.
 
-### 5. Predict
+### 6. Predict
 
 ```bash
 # Interactive loop
@@ -120,7 +136,7 @@ py -m src.predict "http://secure-login.paypa1-account.example/verify"
 Predictions below the confidence threshold (`config.UNCERTAIN_THRESHOLD`,
 default 0.60) are reported as **uncertain** rather than force-classified.
 
-### 6. Web UI
+### 7. Web UI
 
 ```bash
 py app.py          # Windows
