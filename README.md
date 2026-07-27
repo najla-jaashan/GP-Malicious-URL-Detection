@@ -2,12 +2,10 @@
 
 A transformer-based NLP system that classifies URLs into four categories — **benign**, **phishing**, **malware**, and **defacement** — by fine-tuning **DistilBERT** directly on raw URL strings, with no handcrafted feature engineering. The model achieves **98.85% accuracy** on a held-out test set of ~97K URLs.
 
-This repository is the **engineering and productionization work of Najla Jaashan**: a research prototype was re-architected into a clean, modular, reproducible Python package, with a latent label-mapping bug identified and fixed, model persistence and evaluation tooling added, and full documentation authored. The underlying model research is credited below. The original research notebook, paper, and presentation are preserved under `notebooks/` and `docs/`.
-
 ## Project Structure
 
 ```
-malicious-url-detection-distilbert/
+GP-Malicious-URL-Detection/
 ├── app.py               # Gradio web UI (python app.py)
 ├── src/
 │   ├── config.py        # All hyperparameters, paths, and constants
@@ -61,15 +59,31 @@ Confirmed on this exact checkpoint via `python -m src.evaluate` (held-out 15% te
 ### 1. Environment
 
 ```bash
-git clone <your-repo-url>
-cd malicious-url-detection-distilbert
+git clone https://github.com/najla-jaashan/GP-Malicious-URL-Detection.git
+cd GP-Malicious-URL-Detection
 
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+# Windows (PowerShell)
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+py -m pip install --upgrade pip
+py -m pip install -r requirements.txt
+
+# macOS / Linux
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-A CUDA-capable GPU is strongly recommended for training (~450K training URLs × 3 epochs). Google Colab's free T4 GPU works fine. Inference runs comfortably on CPU.
+On Windows, use `py` (not `python`) unless `python` is already on your PATH.
+If PowerShell blocks the activation script, run once:
+`Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
+
+**Training needs a GPU.** `distilbert-base-uncased` fine-tuning on ~455K URLs
+for 3 epochs takes minutes on a free Colab T4, but is impractical on a laptop
+CPU (order of days, not hours). Train on Colab, then copy the resulting
+`models/distilbert-url-classifier/` folder here — CPU is fine for inference,
+evaluation, and the web UI.
 
 ### 2. Dataset
 
@@ -78,7 +92,8 @@ Download `malicious_phish.csv` from the [Kaggle dataset page](https://www.kaggle
 ### 3. Train
 
 ```bash
-python -m src.train
+py -m src.train          # Windows
+python -m src.train      # macOS / Linux
 ```
 
 Saves the fine-tuned model, tokenizer, and label map to `models/distilbert-url-classifier/`.
@@ -86,7 +101,8 @@ Saves the fine-tuned model, tokenizer, and label map to `models/distilbert-url-c
 ### 4. Evaluate
 
 ```bash
-python -m src.evaluate
+py -m src.evaluate          # Windows
+python -m src.evaluate      # macOS / Linux
 ```
 
 Prints the per-class metrics table and a confusion matrix on the held-out test split.
@@ -95,10 +111,10 @@ Prints the per-class metrics table and a confusion matrix on the held-out test s
 
 ```bash
 # Interactive loop
-python -m src.predict
+py -m src.predict
 
 # Or classify URLs directly
-python -m src.predict "http://secure-login.paypa1-account.example/verify"
+py -m src.predict "http://secure-login.paypa1-account.example/verify"
 ```
 
 Predictions below the confidence threshold (`config.UNCERTAIN_THRESHOLD`,
@@ -107,7 +123,8 @@ default 0.60) are reported as **uncertain** rather than force-classified.
 ### 6. Web UI
 
 ```bash
-python app.py
+py app.py          # Windows
+python app.py       # macOS / Linux
 ```
 
 Launches a Gradio interface (with a temporary public share link) where you

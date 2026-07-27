@@ -2,6 +2,7 @@
 torch>=2.0
 transformers>=4.40
 datasets>=2.18
+accelerate>=1.1.0
 
 # Data handling & evaluation
 pandas>=2.0
